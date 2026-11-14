@@ -1,0 +1,106 @@
+{
+  "info": {
+    "name": "To-Do List API",
+    "description": "Postman collection for the To-Do List backend. Run the requests in order: Create -> Get All -> Get One -> Update -> Complete -> Delete.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5000" },
+    { "key": "taskId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "1. Create Task (POST)",
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Status is 201', () => pm.response.to.have.status(201));",
+        "const task = pm.response.json();",
+        "pm.test('Task is Pending', () => pm.expect(task.status).to.eql('Pending'));",
+        "pm.collectionVariables.set('taskId', task._id);"
+      ] } }],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"title\": \"Finish ITCC 106 project\",\n  \"description\": \"Build and demo the To-Do List app\"\n}" },
+        "url": { "raw": "{{baseUrl}}/api/tasks", "host": ["{{baseUrl}}"], "path": ["api", "tasks"] }
+      }
+    },
+    {
+      "name": "2. Get All Tasks (GET)",
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+        "pm.test('Response is an array', () => pm.expect(pm.response.json()).to.be.an('array'));"
+      ] } }],
+      "request": {
+        "method": "GET",
+        "url": { "raw": "{{baseUrl}}/api/tasks", "host": ["{{baseUrl}}"], "path": ["api", "tasks"] }
+      }
+    },
+    {
+      "name": "3. Get One Task (GET)",
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+        "pm.test('ID matches', () => pm.expect(pm.response.json()._id).to.eql(pm.collectionVariables.get('taskId')));"
+      ] } }],
+      "request": {
+        "method": "GET",
+        "url": { "raw": "{{baseUrl}}/api/tasks/{{taskId}}", "host": ["{{baseUrl}}"], "path": ["api", "tasks", "{{taskId}}"] }
+      }
+    },
+    {
+      "name": "4. Update Task (PUT)",
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+        "pm.test('Title updated', () => pm.expect(pm.response.json().title).to.eql('Finish ITCC 106 project (edited)'));"
+      ] } }],
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"title\": \"Finish ITCC 106 project (edited)\",\n  \"description\": \"Updated description\"\n}" },
+        "url": { "raw": "{{baseUrl}}/api/tasks/{{taskId}}", "host": ["{{baseUrl}}"], "path": ["api", "tasks", "{{taskId}}"] }
+      }
+    },
+    {
+      "name": "5. Complete Task (PATCH)",
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+        "pm.test('Task is Completed', () => pm.expect(pm.response.json().status).to.eql('Completed'));"
+      ] } }],
+      "request": {
+        "method": "PATCH",
+        "url": { "raw": "{{baseUrl}}/api/tasks/{{taskId}}/complete", "host": ["{{baseUrl}}"], "path": ["api", "tasks", "{{taskId}}", "complete"] }
+      }
+    },
+    {
+      "name": "6. Delete Task (DELETE)",
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Status is 200', () => pm.response.to.have.status(200));"
+      ] } }],
+      "request": {
+        "method": "DELETE",
+        "url": { "raw": "{{baseUrl}}/api/tasks/{{taskId}}", "host": ["{{baseUrl}}"], "path": ["api", "tasks", "{{taskId}}"] }
+      }
+    },
+    {
+      "name": "Error test: empty title (expects 400)",
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Status is 400', () => pm.response.to.have.status(400));"
+      ] } }],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"title\": \"\",\n  \"description\": \"No title\"\n}" },
+        "url": { "raw": "{{baseUrl}}/api/tasks", "host": ["{{baseUrl}}"], "path": ["api", "tasks"] }
+      }
+    },
+    {
+      "name": "Error test: deleted task (expects 404)",
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Status is 404', () => pm.response.to.have.status(404));"
+      ] } }],
+      "request": {
+        "method": "GET",
+        "url": { "raw": "{{baseUrl}}/api/tasks/{{taskId}}", "host": ["{{baseUrl}}"], "path": ["api", "tasks", "{{taskId}}"] }
+      }
+    }
+  ]
+}
